@@ -10,7 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Workforce_Purple_Parrots.Models;
 using Workforce_Purple_Parrots.Models.ViewModels;
 
-namespace PurpleParrots.Controllers
+namespace Workforce_Purple_Parrots.Controllers
 {
     public class DepartmentsController : Controller
     {
