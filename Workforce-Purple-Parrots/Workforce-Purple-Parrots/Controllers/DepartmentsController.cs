@@ -155,15 +155,33 @@ namespace Workforce_Purple_Parrots.Controllers
                                 DepartmentEmployees = new List<Employee>()
                             };
                         }
-                        department.DepartmentEmployees.Add(new Employee()
+
+                        if (!reader.IsDBNull(reader.GetOrdinal("FirstName")))
 
                         {
-                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                            FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
-                            LastName = reader.GetString(reader.GetOrdinal("LastName"))
+                            department.DepartmentEmployees.Add(new Employee()
 
-                        });
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                                LastName = reader.GetString(reader.GetOrdinal("LastName"))
+
+                            });
+                        }
+                        else
+                        {
+                            department.DepartmentEmployees.Add(new Employee()
+
+                            {
+                               
+                                FirstName = null,
+                                LastName = null
+
+                            });
+                        }
+
                     }
+                    
                 reader.Close();
                 return department;
                 }
