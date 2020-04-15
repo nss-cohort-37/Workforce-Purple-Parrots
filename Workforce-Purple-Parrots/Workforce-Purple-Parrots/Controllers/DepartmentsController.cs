@@ -10,7 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Workforce_Purple_Parrots.Models;
 using Workforce_Purple_Parrots.Models.ViewModels;
 
-namespace PurpleParrots.Controllers
+namespace Workforce_Purple_Parrots.Controllers
 {
     public class DepartmentsController : Controller
     {
@@ -39,8 +39,8 @@ namespace PurpleParrots.Controllers
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
                     cmd.CommandText = @"SELECT d.Id, d.[Name], d.Budget, COUNT(e.DepartmentId) as EmployeeCount
-                                        FROM Employee e
-                                        LEFT JOIN Department d ON e.DepartmentId = d.Id
+                                        FROM Department d
+                                        LEFT JOIN Employee e ON e.DepartmentId = d.Id
                                         GROUP BY d.Id, d.[Name], d.Budget";
 
                     var reader = cmd.ExecuteReader();
@@ -80,11 +80,17 @@ namespace PurpleParrots.Controllers
             return View(Department);
         }
 
+        public ActionResult Create()
+        {
+           
+            return View();
+        }
+
 
         // POST: Departments/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(DepartmentCreateViewModel department)
+        public ActionResult Create(Department department)
         {
             try
             {
