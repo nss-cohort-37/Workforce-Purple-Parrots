@@ -8,6 +8,7 @@ using System.Data;
 using Microsoft.Data.SqlClient;
 using Workforce_Purple_Parrots.Models;
 using Microsoft.AspNetCore.Http;
+using Workforce_Purple_Parrots.Models.ViewModels;
 
 namespace Workforce_Purple_Parrots.Controllers
 {
@@ -133,53 +134,51 @@ namespace Workforce_Purple_Parrots.Controllers
           }
       }
 
-    //    // GET: Employees/Create
-    //    public ActionResult Create()
-    //    {
-    //        var cohortOptions = GetCohortOptions();
-    //        var viewModel = new EmployeeEditViewmodel()
-    //        {
-    //            CohortOptions = cohortOptions
-    //        };
-    //        return View(viewModel);
-    //    }
+       // GET: Employees/Create
+       public ActionResult Create()
+       {
 
-    //    // POST: Employees/Create
-    //    [HttpPost]
-    //    [ValidateAntiForgeryToken]
-    //    public ActionResult Create(Employee employee)
-    //    {
-    //        try
-    //        {
-    //            using (SqlConnection conn = Connection)
-    //            {
-    //                conn.Open();
-    //                using (SqlCommand cmd = conn.CreateCommand())
-    //                {
-    //                    cmd.CommandText = @"INSERT INTO Employee (FirstName, LastName, SlackHandle, CohortId, Specialty)
-    //                                        OUTPUT INSERTED.Id
-    //                                        VALUES (@firstName, @lastName, @slackHandle, @cohortId, @specialty)";
+            var viewModel = new EmployeeFormViewModel();
+            return View(viewModel);
+       }
 
-    //                    cmd.Parameters.Add(new SqlParameter("@firstName", employee.FirstName));
-    //                    cmd.Parameters.Add(new SqlParameter("@lastName", employee.LastName));
-    //                    cmd.Parameters.Add(new SqlParameter("@slackHandle", employee.SlackHandle));
-    //                    cmd.Parameters.Add(new SqlParameter("@cohortId", employee.CohortId));
-    //                    cmd.Parameters.Add(new SqlParameter("@specialty", employee.Specialty));
+       // POST: Employees/Create
+       [HttpPost]
+       [ValidateAntiForgeryToken]
+       public ActionResult Create(Employee employee)
+       {
+           try
+           {
+               using (SqlConnection conn = Connection)
+               {
+                   conn.Open();
+                   using (SqlCommand cmd = conn.CreateCommand())
+                   {
+                       cmd.CommandText = @"INSERT INTO Employee  (FirstName, LastName, DepartmentId, Email, IsSupervisor, ComputerId)
+                                           OUTPUT INSERTED.Id
+                                           VALUES (@firstName, @lastName, @departmentId, @email, @isSupervisor, @computerId)";
 
-    //                    var id = (int)cmd.ExecuteScalar();
-    //                    employee.Id = id;
+                       cmd.Parameters.Add(new SqlParameter("@firstName", employee.FirstName));
+                       cmd.Parameters.Add(new SqlParameter("@lastName", employee.LastName));
+                       cmd.Parameters.Add(new SqlParameter("@departmentId", employee.DepartmentId));
+                       cmd.Parameters.Add(new SqlParameter("@isSupervisor", employee.IsSupervisor));
+                       cmd.Parameters.Add(new SqlParameter("@computerId", employee.ComputerId));
+                       cmd.Parameters.Add(new SqlParameter("@email", employee.Email));
 
-    //                    return RedirectToAction(nameof(Index));
-    //                }
-    //            }
+                        var id = (int)cmd.ExecuteScalar();
+                       employee.Id = id;
+
+                       return RedirectToAction(nameof(Index));
+                   }
+               }
 
 
-    //        }
-    //        catch (Exception ex)
-    //        {
-    //            return View();
-    //        }
-    //    }
+           }
+           catch (Exception ex)
+           {
+               return View();
+           }
+       }
 
     //    // GET: Employees/Edit/5
     //    public ActionResult Edit(int id)
