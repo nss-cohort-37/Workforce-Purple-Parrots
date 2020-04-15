@@ -66,12 +66,12 @@ namespace Workforce_Purple_Parrots.Controllers
        //GET: Employees/Details/1
       public ActionResult Details(int id)
       {
-          using (SqlConnection conn = Connection)
-          {
-              conn.Open();
-              using (SqlCommand cmd = conn.CreateCommand())
-              {
-                  cmd.CommandText = @"SELECT e.Id, e.FirstName, e.LastName, d.[Name] AS DeptName, c.Make, c.Model, e.Email, e.IsSupervisor, tp.Name, tp.StartDate,tp.EndDate
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"SELECT e.Id, e.FirstName, e.LastName, d.[Name] AS DeptName, c.Make, c.Model, e.Email, e.IsSupervisor, tp.Name, tp.StartDate,tp.EndDate
                                      FROM Employee e
                                      LEFT JOIN Department d ON d.Id = e.DepartmentId
                                      LEFT JOIN Computer c ON c.Id = e.ComputerId
@@ -79,46 +79,53 @@ namespace Workforce_Purple_Parrots.Controllers
                                      LEFT JOIN TrainingProgram tp ON tp.Id = et.Id
                                      WHERE e.Id = @Id";
 
-                  cmd.Parameters.Add(new SqlParameter("@id", id));
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
 
-                  var reader = cmd.ExecuteReader();
-                  Employee employee = null;
+                    var reader = cmd.ExecuteReader();
+                    Employee employee = null;
 
                     while (reader.Read())
                     {
-                        employee = new Employee()
+                        if (employee == null)
                         {
-                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                            FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
-                            LastName = reader.GetString(reader.GetOrdinal("LastName")),
-                            IsSupervisor = reader.GetBoolean(reader.GetOrdinal("IsSupervisor")),
-                            Email = reader.GetString(reader.GetOrdinal("Email")),
-                            Department = new Department
+                            employee = new Employee()
                             {
-                                Name = reader.GetString(reader.GetOrdinal("DeptName"))
-                            },
-                            Computer = new Computer
-                            {
-                                Make = reader.GetString(reader.GetOrdinal("Make")),
-                                Model = reader.GetString(reader.GetOrdinal("Model"))
-                            },
-                            TrainingProgram = new List<TrainingProgram>()
+                                Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                                LastName = reader.GetString(reader.GetOrdinal("LastName")),
+                                IsSupervisor = reader.GetBoolean(reader.GetOrdinal("IsSupervisor")),
+                                Email = reader.GetString(reader.GetOrdinal("Email")),
+                                Department = new Department
+                                {
+                                    Name = reader.GetString(reader.GetOrdinal("DeptName"))
+                                },
+                                Computer = new Computer
+                                {
+                                    Make = reader.GetString(reader.GetOrdinal("Make")),
+                                    Model = reader.GetString(reader.GetOrdinal("Model"))
+                                },
+                                TrainingProgram = new List<TrainingProgram>()
 
-                        };
-                    }
-
-                        employee.TrainingProgram.Add(new TrainingProgram());
-                        {
-                        Name = reader.GetString(reader.GetOrdinal("Name"));
-                        StartDate = reader.GetDateTime(reader.GetOrdinal("StartDate"));
-                        EndDate = reader.GetDateTime(reader.GetOrdinal("EndDate"))
+                            };
                         }
-                    );
-
-
-
-                    };
-
+                        if (!reader.IsDBNull(reader.GetOrdinal("Name")))
+                        {
+                            employee.TrainingProgram.Add(new TrainingProgram()
+                            {
+                                Name = reader.GetString(reader.GetOrdinal("Name")),
+                                StartDate = reader.GetDateTime(reader.GetOrdinal("StartDate")),
+                                EndDate = reader.GetDateTime(reader.GetOrdinal("EndDate"))
+                            });
+                        }
+                        else
+                        {
+                            employee.TrainingProgram.Add(new TrainingProgram()
+                            {
+                                Name = null,
+                                StartDate = null,
+                                EndDate = null
+                            });
+                        }
                     }
                   reader.Close();
                   return View(employee);

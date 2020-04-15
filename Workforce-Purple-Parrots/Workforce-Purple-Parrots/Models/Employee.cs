@@ -17,7 +17,7 @@ namespace Workforce_Purple_Parrots.Models
         public string Email { get; set; }
         public int ComputerId { get; set; }
         public Computer? Computer { get; set; }
-        public List<TrainingProgram> TrainingProgram { get; set; }
+        public List<TrainingProgram>? TrainingProgram { get; set; }
 
     }
 }
