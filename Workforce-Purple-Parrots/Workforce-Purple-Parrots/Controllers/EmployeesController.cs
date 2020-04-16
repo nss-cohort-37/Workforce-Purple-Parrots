@@ -122,9 +122,9 @@ namespace Workforce_Purple_Parrots.Controllers
                         {
                             employee.TrainingProgram.Add(new TrainingProgram()
                             {
-                                Name = null,
-                                StartDate = null,
-                                EndDate = null
+                                //Name = null,
+                                //StartDate = null,
+                                //EndDate = null
                             });
                         }
                     }
