@@ -8,7 +8,7 @@ namespace Workforce_Purple_Parrots.Models.ViewModels
 {
     public class EmployeeFormViewModel
     {
-
+        public int EmployeeId { get; set; }
         [Display(Name = "First Name")]
         [Required]
         [MinLength(2)]
