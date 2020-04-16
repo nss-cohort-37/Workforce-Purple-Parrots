@@ -136,10 +136,11 @@ namespace Workforce_Purple_Parrots.Controllers
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"SELECT t.Id, t.[Name], t.StartDate, t.EndDate, t.MaxAttendees 
-                                      FROM TrainingProgram d 
-                                      LEFT JOIN Employee e ON d.Id = e.TrainingProgramId
-                                      WHERE d.Id = @id";
+                    cmd.CommandText = @"SELECT t.Id, t.[Name], t.StartDate, t.EndDate, t.MaxAttendees, e.Id as EmployeeId, e.FirstName, e.LastName
+                                        FROM TrainingProgram t 
+                                        LEFT JOIN EmployeeTraining et ON t.Id = et.TrainingProgramId
+                                        LEFT JOIN Employee e ON e.Id = et.EmployeeId
+                                         WHERE t.Id = @id";
 
                     cmd.Parameters.Add(new SqlParameter("@id", id));
 
@@ -173,17 +174,17 @@ namespace Workforce_Purple_Parrots.Controllers
 
                             });
                         }
-                        else
-                        {
-                            TrainingProgram.Employees.Add(new Employee()
+                        //else
+                        //{
+                        //    TrainingProgram.Employees.Add(new Employee()
 
-                            {
+                        //    {
 
-                                FirstName = null,
-                                LastName = null
+                        //        FirstName = null,
+                        //        LastName = null
 
-                            });
-                        }
+                        //    });
+                        //}
 
                     }
 
