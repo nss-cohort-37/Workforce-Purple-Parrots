@@ -177,6 +177,39 @@ namespace Workforce_Purple_Parrots.Controllers
             }
         }
 
+        // GET: TrainingProgram/Delete/5
+        public ActionResult Delete(int id)
+        {
+            var TrainingProgram = GetTrainingProgramById(id);
+            return View(TrainingProgram);
+        }
+
+        // POST: TrainingProgram/Delete/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Delete(int id, TrainingProgram TrainingProgram)
+        {
+            try
+            {
+                using (SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = "DELETE FROM TrainingProgram WHERE Id = @id";
+                        cmd.Parameters.Add(new SqlParameter("@id", id));
+
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                return View();
+            }
+        }
 
 
 
