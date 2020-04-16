@@ -8,6 +8,7 @@ namespace Workforce_Purple_Parrots.Models.ViewModels
 {
     public class EmployeeFormViewModel
     {
+        public int EmployeeId { get; set; }
 
         [Display(Name = "First Name")]
         [Required]
@@ -18,21 +19,24 @@ namespace Workforce_Purple_Parrots.Models.ViewModels
         [Required(ErrorMessage = "Last Name is Required")]
         [MinLength(3, ErrorMessage = "Last Name should be at least 3 characters")]
         public string LastName { get; set; }
+
         [Display(Name = "Department Id")]
         [Required]
        
         public int DepartmentId { get; set; }
+
         [Display(Name = "Computer Id")]
         [Required]
 
         public int ComputerId { get; set; }
+
         [Display(Name = "E-mail")]
         [Required]
         [MinLength(2)]
         public string Email { get; set; }
+
         [Display(Name = "Supervisor status")]
-        [Required]
-        [MinLength(2)]
+    
         public bool IsSupervisor { get; set; }
 
     }
