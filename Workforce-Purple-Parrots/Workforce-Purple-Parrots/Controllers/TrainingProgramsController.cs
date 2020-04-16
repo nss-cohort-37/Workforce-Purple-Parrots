@@ -15,7 +15,7 @@ namespace Workforce_Purple_Parrots.Controllers
     public class TrainingProgramsController : Controller
     {
         private readonly IConfiguration _config;
-        private TrainingProgram TrainingProgram;
+       
 
         public TrainingProgramsController(IConfiguration config)
         {
@@ -128,6 +128,58 @@ namespace Workforce_Purple_Parrots.Controllers
         }
 
 
+        // GET: TrainingPrograms/Edit/5
+        public ActionResult Edit(int id)
+        {
+
+            var trainingProgram = GetTrainingProgramById(id);
+            return View(trainingProgram);
+        }
+
+        // POST: TrainingPrograms/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Edit(int id, TrainingProgram trainingProgram)
+        {
+            try
+            {
+                using (SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+
+                        cmd.CommandText = @"Update TrainingProgram
+                                        set Name = @Name,
+                                        StartDate = @StartDate,
+                                        EndDate = @EndDate,
+                                        MaxAttendees = @MaxAttendees
+                                        where Id = @id";
+
+
+                        cmd.Parameters.Add(new SqlParameter("@Name", trainingProgram.Name));
+                        cmd.Parameters.Add(new SqlParameter("@StartDate", trainingProgram.StartDate));
+                        cmd.Parameters.Add(new SqlParameter("@EndDate", trainingProgram.EndDate));
+                        cmd.Parameters.Add(new SqlParameter("@MaxAttendees", trainingProgram.MaxAttendees));
+                        cmd.Parameters.Add(new SqlParameter("@id", id));
+
+                        cmd.ExecuteNonQuery();
+
+
+                    }
+                    return RedirectToAction(nameof(Index));
+                }
+
+            }
+            catch
+            {
+                return View();
+            }
+        }
+
+
+
+
 
         private TrainingProgram GetTrainingProgramById(int id)
         {
@@ -174,17 +226,7 @@ namespace Workforce_Purple_Parrots.Controllers
 
                             });
                         }
-                        //else
-                        //{
-                        //    TrainingProgram.Employees.Add(new Employee()
-
-                        //    {
-
-                        //        FirstName = null,
-                        //        LastName = null
-
-                        //    });
-                        //}
+                        
 
                     }
 

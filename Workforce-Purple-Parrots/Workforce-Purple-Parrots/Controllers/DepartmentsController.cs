@@ -168,17 +168,7 @@ namespace Workforce_Purple_Parrots.Controllers
 
                             });
                         }
-                        else
-                        {
-                            department.DepartmentEmployees.Add(new Employee()
-
-                            {
-                               
-                                FirstName = null,
-                                LastName = null
-
-                            });
-                        }
+                       
 
                     }
                     
