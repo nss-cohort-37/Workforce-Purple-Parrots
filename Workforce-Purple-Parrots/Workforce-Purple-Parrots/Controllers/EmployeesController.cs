@@ -145,7 +145,7 @@ namespace Workforce_Purple_Parrots.Controllers
        // POST: Employees/Create
        [HttpPost]
        [ValidateAntiForgeryToken]
-       public ActionResult Create(Employee employee)
+       public ActionResult Create(EmployeeFormViewModel employee)
        {
            try
            {
@@ -166,7 +166,7 @@ namespace Workforce_Purple_Parrots.Controllers
                        cmd.Parameters.Add(new SqlParameter("@email", employee.Email));
 
                         var id = (int)cmd.ExecuteScalar();
-                       employee.Id = id;
+                       employee.EmployeeId = id;
 
                        return RedirectToAction(nameof(Index));
                    }
