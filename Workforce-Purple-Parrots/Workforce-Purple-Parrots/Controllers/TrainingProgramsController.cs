@@ -69,6 +69,47 @@ namespace Workforce_Purple_Parrots.Controllers
 
         }
 
+        // GET: PastTrainingPrograms
+        public ActionResult PastTrainingPrograms()
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"SELECT Id, Name, StartDate, EndDate, MaxAttendees 
+                                        FROM TrainingProgram
+                                        WHERE StartDate < GETDATE()";
+
+
+                    var reader = cmd.ExecuteReader();
+                    var trainingPrograms = new List<TrainingProgram>();
+
+                    while (reader.Read())
+                    {
+                        var trainingProgram = new TrainingProgram()
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            Name = reader.GetString(reader.GetOrdinal("Name")),
+                            StartDate = reader.GetDateTime(reader.GetOrdinal("StartDate")),
+                            EndDate = reader.GetDateTime(reader.GetOrdinal("EndDate")),
+                            MaxAttendees = reader.GetInt32(reader.GetOrdinal("MaxAttendees"))
+
+
+                        };
+                        trainingPrograms.Add(trainingProgram);
+
+
+                    }
+                    reader.Close();
+                    return View(trainingPrograms);
+                }
+            }
+
+        }
+
+
+
 
 
 
@@ -177,6 +218,39 @@ namespace Workforce_Purple_Parrots.Controllers
             }
         }
 
+        // GET: TrainingProgram/Delete/5
+        public ActionResult Delete(int id)
+        {
+            var TrainingProgram = GetTrainingProgramById(id);
+            return View(TrainingProgram);
+        }
+
+        // POST: TrainingProgram/Delete/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Delete(int id, TrainingProgram TrainingProgram)
+        {
+            try
+            {
+                using (SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = "DELETE FROM TrainingProgram WHERE Id = @id";
+                        cmd.Parameters.Add(new SqlParameter("@id", id));
+
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                return View();
+            }
+        }
 
 
 
