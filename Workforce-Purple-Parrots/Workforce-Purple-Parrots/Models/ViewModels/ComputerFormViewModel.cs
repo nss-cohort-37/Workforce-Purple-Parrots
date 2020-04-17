@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -13,5 +14,10 @@ namespace Workforce_Purple_Parrots.Models.ViewModels
         public string Model { get; set; }
         //[DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:MM/dd/yyyy}")]
         public DateTime PurchaseDate { get; set; }
+
+        [Display(Name = "Employee")]
+        [Required]
+        public int EmployeeId { get; set; }
+        public List<SelectListItem> EmployeeOptions { get; set; }
     }
 }
