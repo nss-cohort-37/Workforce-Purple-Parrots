@@ -53,11 +53,11 @@ namespace Workforce_Purple_Parrots.Controllers
                         };
 
 
-                            if (!reader.IsDBNull(reader.GetOrdinal("DecomissionDate")))
+                        if (!reader.IsDBNull(reader.GetOrdinal("DecomissionDate")))
                         {
                             computer.DecomissionDate = reader.GetDateTime(reader.GetOrdinal("DecomissionDate"));
-                            
-                    
+
+
                         };
 
                         computers.Add(computer);
@@ -76,7 +76,7 @@ namespace Workforce_Purple_Parrots.Controllers
             return View(computer);
 
 
-            }
+        }
 
         // GET: Computer/Create
         public ActionResult Create()
@@ -97,7 +97,10 @@ namespace Workforce_Purple_Parrots.Controllers
         {
             try
             {
-                // TODO: Add insert logic here
+                //if there is an Employee ID value
+                //execute an update employee function
+                //this will add the new computerId to an existing employee
+                //return to indexView
                 using (SqlConnection conn = Connection)
                 {
                     conn.Open();
@@ -110,10 +113,16 @@ namespace Workforce_Purple_Parrots.Controllers
                         cmd.Parameters.Add(new SqlParameter("@make", computer.Make));
                         cmd.Parameters.Add(new SqlParameter("@model", computer.Model));
                         cmd.Parameters.Add(new SqlParameter("@purchaseDate", computer.PurchaseDate));
-                      
+
 
                         var id = (int)cmd.ExecuteScalar();
                         computer.Id = id;
+                        //if (computer.EmployeeId == null)
+                        //{
+                        //    //update employee
+                        //    //I will need, the computer.EmployeeId
+                        //    //and I will need the computer.Id
+                        //}
 
                         return RedirectToAction(nameof(Index));
                     }
@@ -213,30 +222,30 @@ namespace Workforce_Purple_Parrots.Controllers
         // POST: Computer/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, Computer computer)
+        public ActionResult Delete(Computer computer)
         {
-                try
+            try
+            {
+                using (SqlConnection conn = Connection)
                 {
-                    using (SqlConnection conn = Connection)
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
                     {
-                        conn.Open();
-                        using (SqlCommand cmd = conn.CreateCommand())
-                        {
-                            cmd.CommandText = "DELETE FROM Computer WHERE Id = @id";
-                            cmd.Parameters.Add(new SqlParameter("@id", id));
+                        cmd.CommandText = "DELETE FROM Computer WHERE Id = @id";
+                        cmd.Parameters.Add(new SqlParameter("@id", computer.Id));
 
-                            cmd.ExecuteNonQuery();
-                        }
+                        cmd.ExecuteNonQuery();
                     }
+                }
 
-                    return RedirectToAction(nameof(Index));
-                }
-                catch (Exception ex)
-                {
-                    ViewData["ErrorMessage"] = "Cannot Delete Computer that has been assigned to a user.";
-                    return View(computer);
-                }
+                return RedirectToAction(nameof(Index));
             }
+            catch (Exception ex)
+            {
+                ViewData["ErrorMessage"] = "Cannot Delete Computer that has been assigned to a user.";
+                return View(computer);
+            }
+        }
 
         private List<SelectListItem> GetEmployeeOptions()
         {
@@ -291,8 +300,8 @@ namespace Workforce_Purple_Parrots.Controllers
                             Model = reader.GetString(reader.GetOrdinal("Model")),
                             PurchaseDate = reader.GetDateTime(reader.GetOrdinal("PurchaseDate"))
                         };
-                            
-                            if (!reader.IsDBNull(reader.GetOrdinal("FirstName")))
+
+                        if (!reader.IsDBNull(reader.GetOrdinal("FirstName")))
                         {
                             computer.Employee = new Employee
                             {
@@ -303,46 +312,38 @@ namespace Workforce_Purple_Parrots.Controllers
 
                     };
 
-                        if (!reader.IsDBNull(reader.GetOrdinal("DecomissionDate")))
-                        {
-                            computer.DecomissionDate = reader.GetDateTime(reader.GetOrdinal("DecomissionDate"));
+                    if (!reader.IsDBNull(reader.GetOrdinal("DecomissionDate")))
+                    {
+                        computer.DecomissionDate = reader.GetDateTime(reader.GetOrdinal("DecomissionDate"));
 
-                        };
+                    };
 
-                        
 
-                    
+
+
                     reader.Close();
                     return computer;
                 }
             }
         }
 
-        //private List<SelectListItem> GetCohortOptions()
-        //{
-        //    using (SqlConnection conn = Connection)
-        //    {
-        //        conn.Open();
-        //        using (SqlCommand cmd = conn.CreateCommand())
-        //        {
-        //            cmd.CommandText = "SELECT Id, Name FROM Cohort";
+        private void UpdateEmployee(int computerId, int employeeId)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"UPDATE Employee
+                                            SET ComputerId = @computerId
+                                            WHERE Id = @id";
 
-        //            var reader = cmd.ExecuteReader();
-        //            var options = new List<SelectListItem>();
+                    cmd.Parameters.Add(new SqlParameter("@computerId", computerId));
+                    cmd.Parameters.Add(new SqlParameter("@id", employeeId));
 
-        //            while (reader.Read())
-        //            {
-        //                var option = new SelectListItem()
-        //                {
-        //                    Text = reader.GetString(reader.GetOrdinal("Name")),
-        //                    Value = reader.GetInt32(reader.GetOrdinal("Id")).ToString()
-        //                };
-        //                options.Add(option);
-        //            }
-        //            reader.Close();
-        //            return options;
-        //        }
-        //    }
-        //}
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
     }
 }

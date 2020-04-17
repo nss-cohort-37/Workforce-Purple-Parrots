@@ -48,7 +48,11 @@
     </dl>
     
     <form asp-action="Delete">
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
+        <input type="submit" value="Delete" class="btn btn-danger" />
+        <input type="hidden" asp-for="PurchaseDate" class="form-control" />
+        <input type="hidden" asp-for="DecomissionDate" class="form-control" />
+        <input type="hidden" asp-for="Make" class="form-control" />
+        <input type="hidden" asp-for="Model" class="form-control" />
         <a asp-action="Index">Back to List</a>
     </form>
 </div>
