@@ -81,10 +81,11 @@ namespace Workforce_Purple_Parrots.Controllers
         // GET: Computer/Create
         public ActionResult Create()
         {
-            //var cohortOptions = GetCohortOptions();
+            var employeeOptions = GetEmployeeOptions();
             var viewModel = new ComputerFormViewModel()
             {
-                PurchaseDate = DateTime.Now
+                PurchaseDate = DateTime.Now,
+                EmployeeOptions = employeeOptions
             };
             return View(viewModel);
         }
@@ -193,6 +194,19 @@ namespace Workforce_Purple_Parrots.Controllers
         public ActionResult Delete(int id)
         {
             var computer = GetComputerById(id);
+            //click delete button
+            //confirmation page comes up
+            //a get that will pull the computer information
+            //if FirstName is NULL
+            //delete the PC
+            //else
+            //alert the user that is cannot be done and why
+
+            //ways to do this
+            //remove delete from anyone who has relationship to a pc
+
+            //
+
             return View(computer);
         }
 
@@ -201,25 +215,55 @@ namespace Workforce_Purple_Parrots.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Delete(int id, Computer computer)
         {
-            try
-            {
-                using (SqlConnection conn = Connection)
+                try
                 {
-                    conn.Open();
-                    using (SqlCommand cmd = conn.CreateCommand())
+                    using (SqlConnection conn = Connection)
                     {
-                        cmd.CommandText = "DELETE FROM Computer WHERE Id = @id";
-                        cmd.Parameters.Add(new SqlParameter("@id", id));
+                        conn.Open();
+                        using (SqlCommand cmd = conn.CreateCommand())
+                        {
+                            cmd.CommandText = "DELETE FROM Computer WHERE Id = @id";
+                            cmd.Parameters.Add(new SqlParameter("@id", id));
 
-                        cmd.ExecuteNonQuery();
+                            cmd.ExecuteNonQuery();
+                        }
                     }
-                }
 
-                return RedirectToAction(nameof(Index));
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception ex)
+                {
+                    ViewData["ErrorMessage"] = "Cannot Delete Computer that has been assigned to a user.";
+                    return View(computer);
+                }
             }
-            catch (Exception ex)
+
+        private List<SelectListItem> GetEmployeeOptions()
+        {
+            using (SqlConnection conn = Connection)
             {
-                return View();
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = "SELECT Id, COALESCE(FirstName + ' ' + LastName, 'N/A') as EmployeeName FROM Employee";
+
+                    var reader = cmd.ExecuteReader();
+                    var options = new List<SelectListItem>();
+
+                    while (reader.Read())
+                    {
+                        var option = new SelectListItem()
+                        {
+                            Text = reader.GetString(reader.GetOrdinal("EmployeeName")),
+                            Value = reader.GetInt32(reader.GetOrdinal("Id")).ToString()
+                        };
+
+                        options.Add(option);
+
+                    }
+                    reader.Close();
+                    return options;
+                }
             }
         }
         private Computer GetComputerById(int id)
