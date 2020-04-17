@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -22,12 +23,10 @@ namespace Workforce_Purple_Parrots.Models.ViewModels
 
         [Display(Name = "Department Id")]
         [Required]
-       
         public int DepartmentId { get; set; }
 
         [Display(Name = "Computer Id")]
         [Required]
-
         public int ComputerId { get; set; }
 
         [Display(Name = "E-mail")]
@@ -36,8 +35,10 @@ namespace Workforce_Purple_Parrots.Models.ViewModels
         public string Email { get; set; }
 
         [Display(Name = "Supervisor status")]
-    
         public bool IsSupervisor { get; set; }
+
+        public List<SelectListItem> DepartmentOptions { get; set; }
+        public List<SelectListItem> ComputerOptions { get; set; }
 
     }
 }

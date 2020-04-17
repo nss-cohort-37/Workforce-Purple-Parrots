@@ -137,85 +137,10 @@ namespace Workforce_Purple_Parrots.Controllers
             }
         }
 
-        //// GET: Computer/Edit/5
-        //public ActionResult Edit(int id)
-        //{
-        //    var computer = GetComputerById(id);
-        //    var cohortOptions = GetCohortOptions();
-        //    var viewModel = new ComputerEditViewModel()
-        //    {
-        //        ComputerId = computer.Id,
-        //        FirstName = computer.FirstName,
-        //        LastName = computer.LastName,
-        //        CohortId = computer.CohortId,
-        //        SlackHandle = computer.SlackHandle,
-        //        Specialty = computer.Specialty,
-        //        CohortOptions = cohortOptions
-
-        //    };
-        //    return View(viewModel);
-        //}
-
-        //// POST: Computer/Edit/5
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public ActionResult Edit(int id, ComputerEditViewModel computer)
-        //{
-        //    try
-        //    {
-        //        using (SqlConnection conn = Connection)
-        //        {
-        //            conn.Open();
-        //            using (SqlCommand cmd = conn.CreateCommand())
-        //            {
-        //                cmd.CommandText = @"UPDATE Computer 
-        //                                    SET FirstName = @firstName, 
-        //                                        LastName = @lastName, 
-        //                                        SlackHandle = @slackHandle, 
-        //                                        CohortId = @cohortId,
-        //                                        Specialty = @Specialty
-        //                                    WHERE Id = @id";
-
-        //                cmd.Parameters.Add(new SqlParameter("@firstName", computer.FirstName));
-        //                cmd.Parameters.Add(new SqlParameter("@lastName", computer.LastName));
-        //                cmd.Parameters.Add(new SqlParameter("@slackHandle", computer.SlackHandle));
-        //                cmd.Parameters.Add(new SqlParameter("@cohortId", computer.CohortId));
-        //                cmd.Parameters.Add(new SqlParameter("@id", id));
-        //                cmd.Parameters.Add(new SqlParameter("@specialty", computer.Specialty));
-
-        //                var rowsAffected = cmd.ExecuteNonQuery();
-
-        //                if (rowsAffected < 1)
-        //                {
-        //                    return NotFound();
-        //                }
-        //            }
-        //        }
-
-        //        return RedirectToAction(nameof(Index));
-        //    }
-        //    catch
-        //    {
-        //        return View();
-        //    }
-        //}
-
         // GET: Computer/Delete/5
         public ActionResult Delete(int id)
         {
             var computer = GetComputerById(id);
-            //click delete button
-            //confirmation page comes up
-            //a get that will pull the computer information
-            //if FirstName is NULL
-            //delete the PC
-            //else
-            //alert the user that is cannot be done and why
-
-            //ways to do this
-            //remove delete from anyone who has relationship to a pc
-
-            //
 
             return View(computer);
         }

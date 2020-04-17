@@ -9,6 +9,7 @@ using Microsoft.Data.SqlClient;
 using Workforce_Purple_Parrots.Models;
 using Microsoft.AspNetCore.Http;
 using Workforce_Purple_Parrots.Models.ViewModels;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Workforce_Purple_Parrots.Controllers
 {
@@ -51,9 +52,9 @@ namespace Workforce_Purple_Parrots.Controllers
                             FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
                             LastName = reader.GetString(reader.GetOrdinal("LastName")),
                             Department = new Department
-                                {
+                            {
                                 Name = reader.GetString(reader.GetOrdinal("DeptName"))
-                                }
+                            }
                         };
                         employees.Add(employee);
                     }
@@ -64,9 +65,9 @@ namespace Workforce_Purple_Parrots.Controllers
 
         }
 
-       //GET: Employees/Details/1
-      public ActionResult Details(int id)
-      {
+        //GET: Employees/Details/1
+        public ActionResult Details(int id)
+        {
             using (SqlConnection conn = Connection)
             {
                 conn.Open();
@@ -128,214 +129,278 @@ namespace Workforce_Purple_Parrots.Controllers
                             });
                         }
                     }
-                  reader.Close();
-                  return View(employee);
-              }
-          }
-      }
+                    reader.Close();
+                    return View(employee);
+                }
+            }
+        }
 
-       // GET: Employees/Create
-       public ActionResult Create()
-       {
+        // GET: Employees/Create
+        public ActionResult Create()
+        {
 
             var viewModel = new EmployeeFormViewModel();
             return View(viewModel);
-       }
+        }
 
-       // POST: Employees/Create
-       [HttpPost]
-       [ValidateAntiForgeryToken]
-       public ActionResult Create(EmployeeFormViewModel employee)
-       {
-           try
-           {
-               using (SqlConnection conn = Connection)
-               {
-                   conn.Open();
-                   using (SqlCommand cmd = conn.CreateCommand())
-                   {
-                       cmd.CommandText = @"INSERT INTO Employee  (FirstName, LastName, DepartmentId, Email, IsSupervisor, ComputerId)
+        // POST: Employees/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Create(EmployeeFormViewModel employee)
+        {
+            try
+            {
+                using (SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = @"INSERT INTO Employee  (FirstName, LastName, DepartmentId, Email, IsSupervisor, ComputerId)
                                            OUTPUT INSERTED.Id
                                            VALUES (@firstName, @lastName, @departmentId, @email, @isSupervisor, @computerId)";
 
-                       cmd.Parameters.Add(new SqlParameter("@firstName", employee.FirstName));
-                       cmd.Parameters.Add(new SqlParameter("@lastName", employee.LastName));
-                       cmd.Parameters.Add(new SqlParameter("@departmentId", employee.DepartmentId));
-                       cmd.Parameters.Add(new SqlParameter("@isSupervisor", employee.IsSupervisor));
-                       cmd.Parameters.Add(new SqlParameter("@computerId", employee.ComputerId));
-                       cmd.Parameters.Add(new SqlParameter("@email", employee.Email));
+                        cmd.Parameters.Add(new SqlParameter("@firstName", employee.FirstName));
+                        cmd.Parameters.Add(new SqlParameter("@lastName", employee.LastName));
+                        cmd.Parameters.Add(new SqlParameter("@departmentId", employee.DepartmentId));
+                        cmd.Parameters.Add(new SqlParameter("@isSupervisor", employee.IsSupervisor));
+                        cmd.Parameters.Add(new SqlParameter("@computerId", employee.ComputerId));
+                        cmd.Parameters.Add(new SqlParameter("@email", employee.Email));
 
                         var id = (int)cmd.ExecuteScalar();
-                       employee.EmployeeId = id;
+                        employee.EmployeeId = id;
 
-                       return RedirectToAction(nameof(Index));
-                   }
-               }
+                        return RedirectToAction(nameof(Index));
+                    }
+                }
 
 
-           }
-           catch (Exception ex)
-           {
-               return View();
-           }
-       }
+            }
+            catch (Exception ex)
+            {
+                return View();
+            }
+        }
 
-    //    // GET: Employees/Edit/5
-    //    public ActionResult Edit(int id)
-    //    {
-    //        var employee = GetEmployeeById(id);
-    //        var cohortOptions = GetCohortOptions();
-    //        var viewModel = new EmployeeEditViewmodel()
-    //        {
-    //            EmployeeId = employee.Id,
-    //            FirstName = employee.FirstName,
-    //            LastName = employee.LastName,
-    //            Specialty = employee.Specialty,
-    //            CohortId = employee.CohortId,
-    //            SlackHandle = employee.SlackHandle,
-    //            CohortOptions = cohortOptions
-    //        };
-    //        return View(viewModel);
-    //    }
+        // GET: Employees/Edit/5
+        public ActionResult Edit(int id)
+        {
+            var employee = GetEmployeeById(id);
+            var departmentOptions = GetDepartmentOptions();
+            var computerOptions = GetComputerOptions();
+            var viewModel = new EmployeeFormViewModel()
+            {
+                EmployeeId = employee.Id,
+                FirstName = employee.FirstName,
+                LastName = employee.LastName,
+                IsSupervisor = employee.IsSupervisor,
+                Email = employee.Email,
+                ComputerId = employee.ComputerId,
+                DepartmentId = employee.Department.Id,
+                DepartmentOptions = departmentOptions,
+                ComputerOptions = computerOptions
+            };
+            return View(viewModel);
+        }
 
-    //    // PUT: Employees/Edit/5
-    //    [HttpPost]
-    //    [ValidateAntiForgeryToken]
-    //    public ActionResult Edit(int id, Employee employee)
-    //    {
-    //        try
-    //        {
-    //            using (SqlConnection conn = Connection)
-    //            {
-    //                conn.Open();
-    //                using (SqlCommand cmd = conn.CreateCommand())
-    //                {
-    //                    cmd.CommandText = @"UPDATE Employee 
-    //                                        SET FirstName = @firstName, 
-    //                                            LastName = @lastName, 
-    //                                            SlackHandle = @slackHandle, 
-    //                                            CohortId = @cohortId,
-    //                                            Specialty = @specialty
-    //                                        WHERE Id = @id";
+        // PUT: Employees/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Edit(int id, Employee employee)
+        {
+            try
+            {
+                using (SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = @"UPDATE Employee 
+                                                SET FirstName = @firstName, 
+                                                    LastName = @lastName, 
+                                                    IsSupervisor = @isSupervisor, 
+                                                    Email = @email,
+                                                    DepartmentId = @departmentId
+                                                WHERE Id = @id";
 
-    //                    cmd.Parameters.Add(new SqlParameter("@firstName", employee.FirstName));
-    //                    cmd.Parameters.Add(new SqlParameter("@lastName", employee.LastName));
-    //                    cmd.Parameters.Add(new SqlParameter("@slackHandle", employee.SlackHandle));
-    //                    cmd.Parameters.Add(new SqlParameter("@cohortId", employee.CohortId));
-    //                    cmd.Parameters.Add(new SqlParameter("@specialty", employee.Specialty));
-    //                    cmd.Parameters.Add(new SqlParameter("@id", id));
+                        cmd.Parameters.Add(new SqlParameter("@firstName", employee.FirstName));
+                        cmd.Parameters.Add(new SqlParameter("@lastName", employee.LastName));
+                        cmd.Parameters.Add(new SqlParameter("@isSupervisor", employee.IsSupervisor));
+                        cmd.Parameters.Add(new SqlParameter("@email", employee.Email));
+                        cmd.Parameters.Add(new SqlParameter("@departmentId", employee.DepartmentId));
+                        cmd.Parameters.Add(new SqlParameter("@id", id));
 
-    //                    var rowsAffected = cmd.ExecuteNonQuery();
+                        var rowsAffected = cmd.ExecuteNonQuery();
 
-    //                    if (rowsAffected < 1)
-    //                    {
-    //                        return NotFound();
-    //                    }
-    //                }
-    //            }
+                        if (rowsAffected < 1)
+                        {
+                            return NotFound();
+                        }
+                    }
+                    if (employee.ComputerId != 0)
+                    {
+                        //update employee
+                        //I will need, the computer.EmployeeId
+                        //and I will need the computer.Id
+                        UpdateComputer(employee.Id, employee.ComputerId);
+                    }
+                }
 
-    //            return RedirectToAction(nameof(Index));
-    //        }
-    //        catch (Exception ex)
-    //        {
-    //            return View();
-    //        }
-    //    }
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                return View();
+            }
+        }
 
-    //    // GET: Employees/Delete/5
-    //    public ActionResult Delete(int id)
-    //    {
-    //        var employee = GetEmployeeById(id);
-    //        return View(employee);
-    //    }
+        private void UpdateComputer(int employeeId, int computerId)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"UPDATE Employee
+                                            SET ComputerId = @computerId
+                                            WHERE Id = @id";
 
-    //    // POST: Employees/Delete/5
-    //    [HttpPost]
-    //    [ValidateAntiForgeryToken]
-    //    public ActionResult Delete(int id, Employee employee)
-    //    {
-    //        try
-    //        {
-    //            using (SqlConnection conn = Connection)
-    //            {
-    //                conn.Open();
-    //                using (SqlCommand cmd = conn.CreateCommand())
-    //                {
-    //                    cmd.CommandText = "DELETE FROM Employee WHERE Id = @id";
-    //                    cmd.Parameters.Add(new SqlParameter("@id", id));
+                    cmd.Parameters.Add(new SqlParameter("@computerId", computerId));
+                    cmd.Parameters.Add(new SqlParameter("@id", employeeId));
 
-    //                    cmd.ExecuteNonQuery();
-    //                }
-    //            }
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
 
-    //            return RedirectToAction(nameof(Index));
-    //        }
-    //        catch (Exception ex)
-    //        {
-    //            return View();
-    //        }
-    //    }
+        private List<SelectListItem> GetDepartmentOptions()
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = "SELECT Id, Name FROM Department";
 
-    //    private List<SelectListItem> GetCohortOptions()
-    //    {
-    //        using (SqlConnection conn = Connection)
-    //        {
-    //            conn.Open();
-    //            using (SqlCommand cmd = conn.CreateCommand())
-    //            {
-    //                cmd.CommandText = "SELECT Id, Name FROM Cohort";
+                    var reader = cmd.ExecuteReader();
+                    var options = new List<SelectListItem>();
 
-    //                var reader = cmd.ExecuteReader();
-    //                var options = new List<SelectListItem>();
+                    while (reader.Read())
+                    {
+                        var option = new SelectListItem()
+                        {
+                            Text = reader.GetString(reader.GetOrdinal("Name")),
+                            Value = reader.GetInt32(reader.GetOrdinal("Id")).ToString()
+                        };
 
-    //                while (reader.Read())
-    //                {
-    //                    var option = new SelectListItem()
-    //                    {
-    //                        Text = reader.GetString(reader.GetOrdinal("Name")),
-    //                        Value = reader.GetInt32(reader.GetOrdinal("Id")).ToString()
-    //                    };
+                        options.Add(option);
 
-    //                    options.Add(option);
+                    }
+                    reader.Close();
+                    return options;
+                }
+            }
+        }
 
-    //                }
-    //                reader.Close();
-    //                return options;
-    //            }
-    //        }
-    //    }
-    //    private Employee GetEmployeeById(int id)
-    //    {
-    //        using (SqlConnection conn = Connection)
-    //        {
-    //            conn.Open();
-    //            using (SqlCommand cmd = conn.CreateCommand())
-    //            {
-    //                cmd.CommandText = "SELECT Id, FirstName, LastName, CohortId, SlackHandle, Specialty FROM Employee WHERE Id = @id";
+        private List<SelectListItem> GetComputerOptions()
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"SELECT c.Id, COALESCE(Make + ' ' + Model, 'N/A') as ComputerInfo
+                                        FROM Computer c
+                                        LEFT JOIN Employee e ON c.Id = e.ComputerId
+                                        WHERE e.Id is NULL";
 
-    //                cmd.Parameters.Add(new SqlParameter("@id", id));
+                    var reader = cmd.ExecuteReader();
+                    var options = new List<SelectListItem>();
 
-    //                var reader = cmd.ExecuteReader();
-    //                Employee employee = null;
+                    while (reader.Read())
+                    {
+                        var option = new SelectListItem()
+                        {
+                            Text = reader.GetString(reader.GetOrdinal("ComputerInfo")),
+                            Value = reader.GetInt32(reader.GetOrdinal("Id")).ToString()
+                        };
 
-    //                if (reader.Read())
-    //                {
-    //                    employee = new Employee()
-    //                    {
-    //                        Id = reader.GetInt32(reader.GetOrdinal("Id")),
-    //                        FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
-    //                        LastName = reader.GetString(reader.GetOrdinal("LastName")),
-    //                        SlackHandle = reader.GetString(reader.GetOrdinal("SlackHandle")),
-    //                        CohortId = reader.GetInt32(reader.GetOrdinal("CohortId")),
-    //                        Specialty = reader.GetString(reader.GetOrdinal("Specialty"))
-    //                    };
+                        options.Add(option);
 
-    //                }
-    //                reader.Close();
-    //                return employee;
-    //            }
-    //        }
-    //    }
+                    }
+                    reader.Close();
+                    return options;
+                }
+            }
+        }
 
-    }
+        private Employee GetEmployeeById(int id)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"SELECT e.Id, e.FirstName, e.LastName, d.[Name] AS DeptName, d.Id as DeptId, c.Make, c.Model, e.Email, e.IsSupervisor, tp.Name, tp.StartDate,tp.EndDate
+                                     FROM Employee e
+                                     LEFT JOIN Department d ON d.Id = e.DepartmentId
+                                     LEFT JOIN Computer c ON c.Id = e.ComputerId
+                                     LEFT JOIN EmployeeTraining et ON et.Id = e.Id
+                                     LEFT JOIN TrainingProgram tp ON tp.Id = et.Id
+                                     WHERE e.Id = @Id";
+
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
+
+                    var reader = cmd.ExecuteReader();
+                    Employee employee = null;
+
+                    while (reader.Read())
+                    {
+                        if (employee == null)
+                        {
+                            employee = new Employee()
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                                LastName = reader.GetString(reader.GetOrdinal("LastName")),
+                                IsSupervisor = reader.GetBoolean(reader.GetOrdinal("IsSupervisor")),
+                                Email = reader.GetString(reader.GetOrdinal("Email")),
+                                Department = new Department
+                                {
+                                    Name = reader.GetString(reader.GetOrdinal("DeptName")),
+                                    Id = reader.GetInt32(reader.GetOrdinal("DeptId"))
+                                },
+                                Computer = new Computer
+                                {
+                                    Make = reader.GetString(reader.GetOrdinal("Make")),
+                                    Model = reader.GetString(reader.GetOrdinal("Model"))
+                                },
+                                TrainingProgram = new List<TrainingProgram>()
+
+                            };
+                        }
+                        if (!reader.IsDBNull(reader.GetOrdinal("Name")))
+                        {
+                            employee.TrainingProgram.Add(new TrainingProgram()
+                            {
+                                Name = reader.GetString(reader.GetOrdinal("Name")),
+                                StartDate = reader.GetDateTime(reader.GetOrdinal("StartDate")),
+                                EndDate = reader.GetDateTime(reader.GetOrdinal("EndDate"))
+                            });
+                        }
+                        else
+                        {
+                            employee.TrainingProgram.Add(new TrainingProgram()
+                            {
+                                Name = null,
+                                StartDate = null,
+                                EndDate = null
+                            });
+                        }
+                    }
+                    reader.Close();
+                    return employee;
+                }
+            }
+        }
+    } 
 }
