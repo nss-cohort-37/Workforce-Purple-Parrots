@@ -117,12 +117,13 @@ namespace Workforce_Purple_Parrots.Controllers
 
                         var id = (int)cmd.ExecuteScalar();
                         computer.Id = id;
-                        //if (computer.EmployeeId == null)
-                        //{
-                        //    //update employee
-                        //    //I will need, the computer.EmployeeId
-                        //    //and I will need the computer.Id
-                        //}
+                        if (computer.EmployeeId != 0)
+                        {
+                            //update employee
+                            //I will need, the computer.EmployeeId
+                            //and I will need the computer.Id
+                            UpdateEmployee(computer.Id, computer.EmployeeId);
+                        }
 
                         return RedirectToAction(nameof(Index));
                     }
