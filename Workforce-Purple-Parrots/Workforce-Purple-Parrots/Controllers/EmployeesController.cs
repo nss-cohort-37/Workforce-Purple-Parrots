@@ -10,6 +10,7 @@ using Workforce_Purple_Parrots.Models;
 using Microsoft.AspNetCore.Http;
 using Workforce_Purple_Parrots.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Workforce_Purple_Parrots.Models.ViewModel;
 
 namespace Workforce_Purple_Parrots.Controllers
 {
@@ -73,13 +74,16 @@ namespace Workforce_Purple_Parrots.Controllers
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"SELECT e.Id, e.FirstName, e.LastName, d.[Name] AS DeptName, c.Make, c.Model, e.Email, e.IsSupervisor, tp.Name, tp.StartDate,tp.EndDate
-                                     FROM Employee e
-                                     LEFT JOIN Department d ON d.Id = e.DepartmentId
-                                     LEFT JOIN Computer c ON c.Id = e.ComputerId
-                                     LEFT JOIN EmployeeTraining et ON et.Id = e.Id
-                                     LEFT JOIN TrainingProgram tp ON tp.Id = et.Id
-                                     WHERE e.Id = @Id";
+                    cmd.CommandText = @"SELECT e.Id, e.FirstName, e.LastName, e.DepartmentId, e.Email, e.IsSupervisor, e.ComputerId, 
+                                        d.[Name] AS DeptName, d.Budget, 
+                                        c.PurchaseDate, c.DecomissionDate, c.Make, c.Model,
+                                        tp.[Name], tp.StartDate, tp.EndDate
+                                        FROM Employee e
+                                        LEFT JOIN Department d ON d.Id = e.DepartmentId
+                                        LEFT JOIN Computer c ON c.Id = e.ComputerId
+                                        LEFT JOIN EmployeeTraining et ON et.EmployeeId = e.Id
+                                        LEFT JOIN TrainingProgram tp ON tp.Id=et.TrainingProgramId
+                                        WHERE e.Id = @id";
 
                     cmd.Parameters.Add(new SqlParameter("@id", id));
 
@@ -330,6 +334,97 @@ namespace Workforce_Purple_Parrots.Controllers
                     reader.Close();
                     return options;
                 }
+            }
+        }
+
+        //pulls up view to assign training for employee and grabs all available training
+        public ActionResult AssignTraining(int id)
+        {
+            var trainingOptions = GetAvaialbleTrainingOptions(id);
+            var viewModel = new EmployeeTrainingViewModel()
+            {
+                Id = id,
+                AvailableTrainingPrograms = trainingOptions
+            };
+            return View(viewModel);
+        }
+
+        //helper method to that gets available training for the multi-select view
+        private List<SelectListItem> GetAvaialbleTrainingOptions(int? id)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"SELECT tp.Id, tp.[Name], tp.StartDate, tp.EndDate, (tp.MaxAttendees - COUNT(et.EmployeeId)) AS AvailableSeats
+                                        FROM TrainingProgram tp
+                                        LEFT JOIN EmployeeTraining et ON et.TrainingProgramId = tp.Id
+                                        LEFT JOIN Employee e ON et.EmployeeId = e.Id
+                                        WHERE tp.StartDate > GetDate() OR et.EmployeeId IS NULL
+                                        GROUP BY tp.Id, tp.[Name], tp.StartDate, tp.EndDate, tp.MaxAttendees
+                                        HAVING(tp.MaxAttendees - COUNT(et.EmployeeId)) > 0 AND tp.Id NOT IN (SELECT TrainingProgramId FROM EmployeeTraining WHERE EmployeeTraining.EmployeeId = @id)";
+
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
+
+                    var reader = cmd.ExecuteReader();
+                    var options = new List<SelectListItem>();
+
+                    while (reader.Read())
+                    {
+                        var option = new SelectListItem()
+                        {
+                            Text = reader.GetString(reader.GetOrdinal("Name")),
+                            Value = reader.GetInt32(reader.GetOrdinal("Id")).ToString()
+                        };
+
+                        options.Add(option);
+                    }
+                    reader.Close();
+                    return options;
+                }
+            }
+        }
+
+        //takes the selected values in EmployeeTrainingViewModel 
+        //and loops over and creates and entry in EmployeeTraining for each selected training
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult AssignTraining(EmployeeTrainingViewModel employee)
+        {
+            bool isEmpty = !employee.TrainingProgramIds.Any();
+            try
+            {
+                using (SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+                        if (isEmpty)
+                        {
+                            return RedirectToAction(nameof(Details), new { id = employee.Id });
+                        }
+                        else
+                        {
+                            for (int index = 0; index < employee.TrainingProgramIds.Count; index++)
+                            {
+                                cmd.CommandText = @"INSERT INTO EmployeeTraining (EmployeeId, TrainingProgramId)
+                                                VALUES (@employeeId, @trainingProgramId)";
+
+                                cmd.Parameters.Add(new SqlParameter("@employeeId", employee.Id));
+                                cmd.Parameters.Add(new SqlParameter("@trainingProgramId", employee.TrainingProgramIds.ElementAt(index)));
+
+                                cmd.ExecuteNonQuery();
+                                cmd.Parameters.Clear();
+                            }
+                            return RedirectToAction(nameof(Details), new { id = employee.Id });
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return View(employee);
             }
         }
 
