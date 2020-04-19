@@ -340,7 +340,7 @@ namespace Workforce_Purple_Parrots.Controllers
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"SELECT e.Id, e.FirstName, e.LastName, d.[Name] AS DeptName, d.Id as DeptId, c.Make, c.Model, e.Email, e.IsSupervisor, tp.Name, tp.StartDate,tp.EndDate
+                    cmd.CommandText = @"SELECT e.Id, e.FirstName, e.LastName, e.ComputerId, d.[Name] AS DeptName, d.Id as DeptId, c.Make, c.Model, e.Email, e.IsSupervisor, tp.Name, tp.StartDate,tp.EndDate
                                      FROM Employee e
                                      LEFT JOIN Department d ON d.Id = e.DepartmentId
                                      LEFT JOIN Computer c ON c.Id = e.ComputerId
@@ -371,6 +371,7 @@ namespace Workforce_Purple_Parrots.Controllers
                                 },
                                 Computer = new Computer
                                 {
+
                                     Make = reader.GetString(reader.GetOrdinal("Make")),
                                     Model = reader.GetString(reader.GetOrdinal("Model"))
                                 },
